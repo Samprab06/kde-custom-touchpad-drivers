@@ -1,0 +1,22 @@
+[Unit]
+Description=KDE Custom Precision Touchpad Gesture Daemon
+Documentation=https://github.com/samridh/kde-custom-touchpad-drivers
+# Start after the graphical session so the D-Bus session bus (qdbus6) is available
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+# Resolved relative to the user's home at runtime by the installer
+WorkingDirectory=%h/Projects/kde-custom-touchpad-drivers
+ExecStart=%h/Projects/kde-custom-touchpad-drivers/.venv/bin/python \
+    %h/Projects/kde-custom-touchpad-drivers/precision_daemon.py \
+    --verbose
+Restart=on-failure
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+# Propagate the D-Bus session address so qdbus6 invocations can reach KWin
+Environment=DBUS_SESSION_BUS_ADDRESS=%E{DBUS_SESSION_BUS_ADDRESS}
+
+[Install]
+WantedBy=graphical-session.target

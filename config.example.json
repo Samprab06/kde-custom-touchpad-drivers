@@ -1,0 +1,42 @@
+{
+  "_comment": "Copy this file to ~/.config/kde-custom-touchpad.json and edit as needed.",
+
+  "swipe_trigger_threshold": 60.0,
+  "discrete_trigger_threshold": 120.0,
+  "pinch_trigger_threshold": 80.0,
+
+  "tap_threshold": 100.0,
+  "tap_duration_limit": 0.30,
+  "four_finger_tap_duration_limit": 0.40,
+
+  "_settle_comment": "Contact settling window (ms). Events are buffered for this long after the first finger lands before deciding pointer vs gesture mode. Prevents 3/4-finger taps from leaking as false left-clicks. Matches Windows PTP reference value.",
+  "settle_window_ms": 60,
+
+  "velocity_threshold": 300.0,
+  "velocity_power": 1.2,
+  "base_volume_step": 0.005,
+  "volume_coalesce_ms": 30,
+
+  "shortcuts": {
+    "_comment": "3-finger gestures",
+    "three_finger_tap":  "key:KEY_PLAYPAUSE",
+    "swipe3_left":       "key:KEY_PREVIOUSSONG",
+    "swipe3_right":      "key:KEY_NEXTSONG",
+    "pinch3_in":         "command:true",
+    "pinch3_out":        "command:true",
+
+    "_comment2": "4-finger gestures",
+    "four_finger_tap":   "key:BTN_MIDDLE",
+    "swipe4_up":         "shortcut:Overview",
+    "swipe4_down":       "shortcut:Show Desktop",
+    "swipe4_left":       "shortcut:Switch to Previous Desktop",
+    "swipe4_right":      "shortcut:Switch to Next Desktop"
+  },
+
+  "_fallback_comment": [
+    "If your touchpad cannot reliably register 4-finger taps, use this instead:",
+    "  three_finger_tap → key:BTN_MIDDLE",
+    "  pinch3_in        → key:KEY_PLAYPAUSE",
+    "  four_finger_tap  → command:true"
+  ]
+}
