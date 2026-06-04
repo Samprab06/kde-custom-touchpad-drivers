@@ -401,13 +401,31 @@ class PrecisionDaemon:
         self.log("Virtual keyboard/button uinput device created.")
 
     def _initialize_virtual_touchpad(self) -> None:
-        """Virtual touchpad clone for 1/2-finger pass-through."""
+        """Virtual touchpad clone for 1/2-finger pass-through.
+
+        CRITICAL: input_props must be forwarded from the physical device.
+        Without INPUT_PROP_POINTER the kernel/libinput classifies the UInput
+        device as a touchscreen (INPUT_PROP_DIRECT / direct absolute mapping)
+        rather than a touchpad (relative-delta pointer).  The consequence is
+        that every touch snaps the cursor to the raw absolute coordinate on the
+        pad surface — the 1:1 mapping issue — and each new contact restarts
+        from scratch instead of continuing from the last known cursor position.
+        """
         phys_caps = self.device.capabilities()
         phys_caps.pop(e.EV_SYN, None)
+
+        # Carry the physical device's input properties across to the UInput
+        # clone (typically INPUT_PROP_POINTER=0 and INPUT_PROP_BUTTONPAD=2).
+        phys_props = self.device.input_props()
+
         self.virtual_touchpad = evdev.UInput(
-            phys_caps, name="KDE Custom Touchpad Virtual Touchpad",
+            phys_caps,
+            name="KDE Custom Touchpad Virtual Touchpad",
+            input_props=phys_props if phys_props else None,
         )
-        self.log("Virtual touchpad clone created.")
+        self.log(
+            f"Virtual touchpad clone created (input_props={phys_props})."
+        )
 
     # ------------------------------------------------------------------
     # Main loop
