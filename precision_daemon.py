@@ -80,7 +80,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "pinch_trigger_threshold": 80.0,
 
     # Maximum per-finger drift (raw units) allowed while still counting as a tap.
-    "tap_threshold": 100.0,
+    # Dell XPS touchpads report in a finer coordinate space (~3000 units wide),
+    # so a value of 100 was cancelling even the lightest gentle taps. 200 is the
+    # right ballpark: still tight enough to reject genuine movement.
+    "tap_threshold": 200.0,
 
     # Maximum contact duration (seconds) for a 3-finger tap.
     "tap_duration_limit": 0.30,
@@ -542,6 +545,32 @@ class PrecisionDaemon:
                     f"Gesture ended — duration={duration:.3f}s "
                     f"peak={self.gesture_fingers} drift={self.max_avg_dist:.1f}"
                 )
+
+                # Cancel any pending settle timer and resolve immediately.
+                # This prevents a race where the timer fires AFTER slots.clear()
+                # and tries to release already-gone slots, leaving compositor
+                # contacts stuck — causing the "3-finger tap freeze".
+                if self._settle_state == SettleState.SETTLING:
+                    self._settle_timer.cancel()
+                    # Drain anything the timer may have already posted
+                    while True:
+                        try:
+                            self._settle_queue.get_nowait()
+                        except queue.Empty:
+                            break
+                    # If it was a gesture session (≥3 fingers), make sure the
+                    # compositor has clean releases before we clear the slot map.
+                    if self._settle_peak >= 3:
+                        self._release_all_slots()
+                    self._settle_state = SettleState.POINTER
+                    self._settle_peak = 0
+                    self._settle_buf.clear()
+
+                # Always send clean releases for any GESTURE-mode session so the
+                # compositor does not see dangling MT contacts.
+                elif self._settle_state == SettleState.GESTURE:
+                    self._release_all_slots()
+
                 self._on_gesture_end(duration)
 
                 self.slots.clear()
@@ -613,11 +642,19 @@ class PrecisionDaemon:
         self._settle_buf.clear()
 
     def _release_all_slots(self) -> None:
-        """Send tracking-id=-1 for all active slots to prevent stuck contacts."""
+        """Send tracking-id=-1 for all active slots to prevent stuck contacts.
+
+        Snapshots the slot IDs at call time so it is safe to call both before
+        and after self.slots.clear().
+        """
         if not self.virtual_touchpad:
             return
-        self.log("Releasing all virtual touchpad slots.")
-        for slot_id in list(self.slots.keys()):
+        # Snapshot so we're safe even if called near a slots.clear().
+        slot_ids = list(self.slots.keys())
+        if not slot_ids:
+            return
+        self.log(f"Releasing {len(slot_ids)} virtual touchpad slot(s).")
+        for slot_id in slot_ids:
             self.virtual_touchpad.write(e.EV_ABS, e.ABS_MT_SLOT, slot_id)
             self.virtual_touchpad.write(e.EV_ABS, e.ABS_MT_TRACKING_ID, -1)
         self.virtual_touchpad.write(e.EV_SYN, e.SYN_REPORT, 0)
@@ -737,11 +774,12 @@ class PrecisionDaemon:
         pinch_threshold = self.config.get("pinch_trigger_threshold", 80.0)
         large = 200.0
 
-        should_swipe = total_dist > large or (total_dist > swipe_threshold and duration > 0.15)
-        should_pinch = (
-            abs(total_d_span) > large
-            or (abs(total_d_span) > pinch_threshold and duration > 0.15)
-        )
+        # Trigger swipe as soon as the distance threshold is crossed.
+        # The old 0.15 s time gate was blocking fast-start scrolls from firing
+        # until the user had already moved a noticeable amount — making 2-finger
+        # scroll feel sluggish and unresponsive on first contact.
+        should_swipe = total_dist > swipe_threshold
+        should_pinch = abs(total_d_span) > pinch_threshold
 
         if should_pinch and abs(total_d_span) > total_dist:
             self.pinch_triggered = True
