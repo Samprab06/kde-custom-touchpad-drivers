@@ -1,11 +1,11 @@
 # KDE Custom Touchpad Drivers
 
 A low-latency, custom touchpad gesture daemon for **KDE Plasma 6 on Wayland**.  
-It supersedes KDE's built-in gesture engine and provides velocity-scaled volume control, discrete media and desktop shortcuts, and robust multi-finger tap detection — matching the fluid feel of Windows Precision Touchpads (PTP).
+It supersedes KDE's built-in gesture engine and provides velocity-scaled volume control, discrete media and desktop shortcuts, and robust multi-finger tap detection matching the feel of Windows Precision Touchpad.
 
 ---
 
-## ✨ Default Gesture Bindings
+##  Default Gesture Bindings
 
 | Gesture | Action |
 |---|---|
@@ -22,7 +22,7 @@ It supersedes KDE's built-in gesture engine and provides velocity-scaled volume 
 
 ---
 
-## 🚀 Key Technical Features
+##  Key Technical Features
 
 - **Velocity-scaled volume control** — tracks finger centroid speed and applies a power-based acceleration curve.  
   Slow deliberate swipes → ±0.5% adjustments. Fast flicks → up to ±8% per frame.
@@ -34,7 +34,7 @@ It supersedes KDE's built-in gesture engine and provides velocity-scaled volume 
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 The daemon loads configuration from, in order:
 
@@ -82,7 +82,7 @@ A full example with all available keys:
 
 ---
 
-## 🔧 Hardware Compatibility
+##  Hardware Compatibility
 
 ### 4-Finger Tap Fallback Layout
 
@@ -103,7 +103,7 @@ Save this as `~/.config/kde-custom-touchpad.json` and restart the service.
 
 ---
 
-## 🛠️ Installation
+##  Installation
 
 ### Requirements
 
@@ -161,7 +161,7 @@ journalctl --user -u kde-custom-touchpad.service -f
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 ```
 Physical Touchpad (/dev/input/eventN)
@@ -190,6 +190,6 @@ By registering `BTN_MIDDLE` on a dedicated virtual keyboard device (`KDE Custom 
 
 ---
 
-## 📜 License
+##  License
 
 MIT — see [LICENSE](LICENSE).
