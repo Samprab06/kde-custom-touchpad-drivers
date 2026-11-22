@@ -1,0 +1,19 @@
+[package]
+name = "tpgd"
+description = "Touchpad gesture daemon for Linux (KDE Plasma, GNOME and other libinput desktops)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+tpg-core = { path = "../tpg-core" }
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+evdev = "0.13"
+
+[lints]
+workspace = true

@@ -7,6 +7,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Rust rewrite, phase 1 (restructure)
+- Added a Cargo workspace: `tpg-core` (platform-independent, no I/O) and `tpgd` (Linux binary).
+- `tpg-core::Tracker` decodes the multitouch protocol into atomic frames measured in mm. It flags firmware-reported palms, honours `SYN_DROPPED`, reports same-slot tracking-ID swaps, and keeps axes the kernel didn't resend for a new contact.
+- `tpg-core::classify` picks the touchpad and never a touchscreen or our own virtual device.
+- `tpgd list` and `tpgd dump` diagnostics. `tpgd run` is not implemented yet.
+- CI runs rustfmt, clippy and tests.
+- Moved the Python daemon, installer, config and unit into `legacy/`.
+- Added `docs/DISSECTION.md` (failure analysis) and `docs/ROADMAP.md`.
+
+### Fixed (legacy)
+- systemd unit: removed `DBUS_SESSION_BUS_ADDRESS=%E{…}`. `%E` is systemd's config-directory specifier, so it overrode the real bus address and broke every `qdbus6` call when running as a service. Also stopped passing `--verbose` by default.
+
 ### Fixed
 - **3/4-finger taps misidentified as 2-finger left-clicks** — hardware touchpad contacts do not arrive simultaneously; the 2nd and 3rd fingers of a 3-finger tap typically register 10-40 ms after the 1st. Without mitigation, the daemon forwarded the partial 1-finger and 2-finger contact state to the compositor before the full count was known, causing false left-clicks. Implemented a **contact settling window** (default 60 ms, matches Windows PTP reference spec): all raw events from the first contact frame are buffered and held. When the window expires, the peak finger count decides: ≥3 fingers → GESTURE mode (buffer discarded, compositor never sees partial state); ≤2 fingers → POINTER mode (buffer flushed to compositor intact). This completely eliminates false left-click leakage from multi-finger taps.
 

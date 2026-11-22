@@ -3,6 +3,17 @@
 A low-latency, custom touchpad gesture daemon for **KDE Plasma 6 on Wayland**.  
 It supersedes KDE's built-in gesture engine and provides velocity-scaled volume control, discrete media and desktop shortcuts, and robust multi-finger tap detection matching the feel of Windows Precision Touchpad.
 
+> [!IMPORTANT]
+> **Rewrite in progress.** The Python daemon (now in [`legacy/`](legacy/)) is being replaced by `tpgd`, a Rust daemon for both KDE Plasma and GNOME. See [docs/ROADMAP.md](docs/ROADMAP.md) for the plan and [docs/DISSECTION.md](docs/DISSECTION.md) for why the Python version is unreliable. The rest of this README still describes the legacy daemon; run its commands from inside `legacy/`.
+>
+> Phase 1 ships diagnostics you can already try:
+>
+> ```bash
+> cargo build --release
+> sudo ./target/release/tpgd list   # which device is the touchpad, size in mm
+> sudo ./target/release/tpgd dump   # live finger count, positions, palms
+> ```
+
 ---
 
 ##  Default Gesture Bindings
