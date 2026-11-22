@@ -10,13 +10,13 @@ Type=simple
 # Resolved relative to the user's home at runtime by the installer
 WorkingDirectory=%h/Projects/kde-custom-touchpad-drivers
 ExecStart=%h/Projects/kde-custom-touchpad-drivers/.venv/bin/python \
-    %h/Projects/kde-custom-touchpad-drivers/precision_daemon.py \
-    --verbose
+    %h/Projects/kde-custom-touchpad-drivers/precision_daemon.py
 Restart=on-failure
 RestartSec=3
 Environment=PYTHONUNBUFFERED=1
-# Propagate the D-Bus session address so qdbus6 invocations can reach KWin
-Environment=DBUS_SESSION_BUS_ADDRESS=%E{DBUS_SESSION_BUS_ADDRESS}
+# DBUS_SESSION_BUS_ADDRESS is inherited from the user manager. Do not set it
+# here: "%E" is systemd's config-directory specifier, not an env lookup, and
+# overriding it broke every qdbus6 call when running as a service.
 
 [Install]
 WantedBy=graphical-session.target

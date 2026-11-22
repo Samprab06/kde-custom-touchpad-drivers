@@ -1,0 +1,13 @@
+[package]
+name = "tpg-core"
+description = "Platform-independent touchpad contact tracking and gesture logic (no I/O)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+[lints]
+workspace = true

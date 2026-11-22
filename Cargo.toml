@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = ["crates/tpg-core", "crates/tpgd"]
+
+[workspace.package]
+version = "0.2.0-dev"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/Samprab06/kde-custom-touchpad-drivers"
+rust-version = "1.80"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
